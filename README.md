@@ -1,40 +1,124 @@
-﻿# Classificador de imagens com CNN e reconhecimento ao vivo
+﻿# Classificador de Imagens com CNN
 
-Solucao pratica para o exercicio: voce cria um dataset proprio com imagens da webcam, treina uma CNN, avalia o resultado e depois usa o modelo salvo para reconhecer objetos em tempo real.
+Aplicação de visão computacional para criação de dataset próprio, treinamento de uma rede neural convolucional (CNN), avaliação do modelo e reconhecimento de objetos pela webcam.
+
+O projeto foi desenvolvido em Python com TensorFlow, OpenCV e Streamlit. Ele permite coletar imagens de diferentes classes, treinar um modelo supervisionado e usar o modelo salvo para classificar novas imagens em tempo real ou por captura no navegador.
+
+## Funcionalidades
+
+- Coleta de imagens pela webcam para montar um dataset local.
+- Organização automática das imagens por classe.
+- Treinamento de uma CNN com aumento de dados.
+- Separação automática entre treino, validação e teste.
+- Avaliação do modelo com métricas e matriz de confusão.
+- Reconhecimento por foto capturada no navegador.
+- Reconhecimento ao vivo com webcam usando Streamlit WebRTC.
+- Interface web em Streamlit para executar o fluxo completo.
+
+## Tecnologias
+
+- Python
+- TensorFlow / Keras
+- OpenCV
+- NumPy
+- Matplotlib
+- Streamlit
+- Streamlit WebRTC
 
 ## Estrutura do projeto
 
 ```text
 src/
-  collect_dataset.py       # comando para montar o dataset pela webcam
-  train_cnn.py             # comando para treinar a CNN
-  evaluate_model.py        # comando para avaliar o modelo
-  live_recognition.py      # comando para reconhecer ao vivo
-  image_classifier/        # pacote reutilizavel para uma interface futura
-    datasets.py            # carregamento e divisao dos dados
-    inference.py           # carregamento do modelo e predicao
-    metrics.py             # calculo de metricas
-    model.py               # arquitetura da CNN
-    plots.py               # graficos de treino e avaliacao
-    settings.py            # caminhos e constantes do projeto
+  app.py                    # interface web em Streamlit
+  collect_dataset.py         # coleta imagens pela webcam local
+  train_cnn.py               # treina a CNN
+  evaluate_model.py          # avalia o modelo treinado
+  live_recognition.py        # reconhecimento ao vivo via OpenCV
+  image_classifier/
+    camera.py                # captura, conversão e salvamento de frames
+    datasets.py              # leitura e preparação do dataset
+    inference.py             # carregamento do modelo e predição
+    metrics.py               # cálculo de métricas
+    model.py                 # arquitetura da CNN
+    plots.py                 # geração de gráficos
+    settings.py              # caminhos e configurações globais
 ```
 
-Uma interface futura, como Streamlit ou Gradio, deve importar funcoes de `image_classifier/` e evitar duplicar codigo dos scripts.
+Durante a execução, o projeto cria diretórios locais para armazenar dados, modelos e resultados:
 
-## 1. Preparar o ambiente
+```text
+dataset/      # imagens organizadas por classe
+modelos/      # modelo treinado e arquivo de classes
+resultados/   # gráficos de treino e avaliação
+```
+
+## Como funciona
+
+O fluxo principal é dividido em quatro etapas:
+
+1. Criar um dataset com imagens de pelo menos duas classes.
+2. Treinar a CNN com as imagens coletadas.
+3. Avaliar o desempenho do modelo.
+4. Usar o modelo treinado para reconhecer novas imagens pela webcam.
+
+As imagens do dataset são lidas com TensorFlow, redimensionadas para `128x128` pixels e processadas em lotes. As imagens capturadas pela webcam são lidas com OpenCV, convertidas de BGR para RGB e redimensionadas antes da predição.
+
+## Requisitos
+
+- Python 3.10 ou superior
+- Webcam local ou webcam disponível no navegador
+- Ambiente virtual recomendado
+
+## Instalação
+
+Clone o repositório e acesse a pasta do projeto:
+
+```powershell
+git clone <url-do-repositorio>
+cd visao-computacional
+```
+
+Crie e ative um ambiente virtual:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+```
+
+Instale as dependências:
+
+```powershell
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-## 2. Montar o dataset
+## Executando pela interface web
 
-Escolha de 3 a 5 classes, por exemplo: `caneca`, `celular`, `livro`.
+Para abrir a aplicação Streamlit:
 
-Para coletar imagens de uma classe:
+```powershell
+python -m streamlit run src\app.py
+```
+
+Também é possível executar diretamente:
+
+```powershell
+python src\app.py
+```
+
+A interface possui as seguintes telas:
+
+- `Visão geral`: resumo do dataset e do estado do modelo.
+- `Captura e dataset`: captura imagens pela webcam do navegador.
+- `Treino`: treina a CNN com o dataset atual.
+- `Avaliação`: avalia o modelo e exibe resultados.
+- `Reconhecimento`: classifica imagens capturadas pela webcam.
+
+## Uso pelo terminal
+
+### 1. Coletar imagens
+
+Crie imagens para cada classe desejada:
 
 ```powershell
 python src\collect_dataset.py --class-name caneca --count 50
@@ -42,13 +126,13 @@ python src\collect_dataset.py --class-name celular --count 50
 python src\collect_dataset.py --class-name livro --count 50
 ```
 
-Controles da janela:
+Controles da janela de coleta:
 
-- `espaco`: salva uma foto.
-- `a`: liga/desliga captura automatica.
-- `q`: sai.
+- `Espaço`: salva uma foto.
+- `A`: ativa ou desativa a captura automática.
+- `Q`: encerra a coleta.
 
-As imagens ficam em:
+As imagens serão salvas em:
 
 ```text
 dataset/
@@ -57,86 +141,84 @@ dataset/
   livro/
 ```
 
-## 3. Treinar a CNN
+### 2. Treinar o modelo
 
 ```powershell
 python src\train_cnn.py --epochs 15
 ```
 
-Saidas geradas:
+Arquivos gerados:
 
-- `modelos\modelo_cnn.h5`
-- `modelos\classes.json`
-- `resultados\treinamento.png`
+```text
+modelos/modelo_cnn.h5
+modelos/classes.json
+resultados/treinamento.png
+```
 
-## 4. Avaliar
+### 3. Avaliar o modelo
 
 ```powershell
 python src\evaluate_model.py
 ```
 
-Saidas geradas:
+O comando exibe métricas no terminal e gera a matriz de confusão em:
 
-- `resultados\matriz_confusao.png`
-- metricas exibidas no terminal
+```text
+resultados/matriz_confusao.png
+```
 
-## 5. Reconhecer ao vivo
+### 4. Reconhecer objetos ao vivo
 
 ```powershell
 python src\live_recognition.py
 ```
 
-Controles:
+Pressione `Q` para encerrar a janela da webcam.
 
-- `q`: fecha a webcam.
+## Arquitetura da CNN
 
-O nome da classe prevista e a confianca aparecem sobre a imagem da webcam.
+O modelo usa uma arquitetura convolucional simples para classificação multiclasse:
+
+- Entrada com imagens `128x128x3`.
+- Aumento de dados com flip horizontal, rotação e zoom.
+- Normalização dos pixels.
+- Três blocos convolucionais com `Conv2D` e `MaxPooling2D`.
+- Camadas densas com `Dropout`.
+- Saída `softmax` com uma classe por objeto cadastrado.
+
+O treinamento utiliza:
+
+- Otimizador: `Adam`
+- Função de perda: `sparse_categorical_crossentropy`
+- Métrica principal: `accuracy`
 
 ## Dicas para melhores resultados
 
-- Use boa iluminacao.
-- Varie angulos, distancia e fundo.
-- Tire pelo menos 30 a 50 fotos por classe.
-- Evite classes muito parecidas se o dataset for pequeno.
-- Se a acuracia ficar baixa, colete mais imagens e aumente `--epochs`.
+- Capture pelo menos 30 a 50 imagens por classe.
+- Use boa iluminação.
+- Varie ângulos, distância, posição e fundo.
+- Evite classes visualmente muito parecidas em datasets pequenos.
+- Refaça o treinamento sempre que adicionar novas classes ou muitas imagens.
+- Aumente o número de épocas caso a acurácia ainda esteja baixa.
 
-## Interface
+## Solução de problemas
 
-Inicie a interface com:
+### A webcam não abre
 
-```powershell
-python -m streamlit run src\app.py
-```
+Verifique se outro aplicativo está usando a câmera, como navegador, Teams ou Zoom. Também confira as permissões de câmera do Windows.
 
-Se executar diretamente com `python src\app.py`, o projeto redireciona para o Streamlit automaticamente.
+### O OpenCV não encontra a câmera
 
-Na barra lateral, use `Atualizar cameras` e escolha a `Camera ativa`.
+Use a captura pela interface Streamlit, que acessa a webcam pelo navegador. Essa opção costuma funcionar melhor quando o acesso direto via OpenCV encontra conflitos com o Windows.
 
-O menu da interface tem:
+### O reconhecimento não está disponível
 
-- `Visao geral`: resumo do dataset e do modelo.
-- `Captura e dataset`: mostra a previa da camera antes de salvar, permite salvar uma foto, salvar a foto da previa ou coletar automaticamente.
-- `Treino`: treina a CNN usando o dataset atual.
-- `Avaliacao`: calcula metricas e mostra a matriz de confusao.
-- `Reconhecimento`: mostra a camera com ou sem classificacao ao vivo.
+Treine o modelo antes de usar a tela de reconhecimento. O projeto precisa dos arquivos `modelos/modelo_cnn.h5` e `modelos/classes.json`.
 
+### A acurácia ficou baixa
 
+Colete mais imagens, varie melhor as condições de captura e garanta que cada classe tenha exemplos suficientes.
 
-## Problemas com camera
+## Licença
 
-Se a interface mostrar que nenhuma camera foi detectada, o problema esta no acesso do OpenCV/Windows a webcam, nao no modelo CNN. Tente:
-
-- Fechar Teams, Zoom, navegador ou outro app que possa estar usando a camera.
-- Conferir as permissoes em Configuracoes do Windows > Privacidade e seguranca > Camera.
-- Testar outro indice em `Indice manual da camera` na barra lateral.
-- Aumentar `Buscar ate o indice` e clicar em `Atualizar cameras`.
-- Conectar uma webcam USB se o computador nao tiver camera local disponivel.
-
-## Webcam na interface
-
-Na barra lateral, em `Fonte da imagem`, escolha:
-
-- `Webcam do navegador`: usa a permissao de camera do browser. E a melhor opcao quando o OpenCV nao detecta cameras por indice.
-- `Camera local por indice`: usa OpenCV com indices como 0, 1, 2. Use quando quiser captura continua/local pelo Python.
-
-Para captura de dataset pela webcam do navegador, preencha a classe e tire a foto no componente `Webcam`; a imagem sera salva automaticamente no dataset da classe. Para reconhecimento, tire uma foto em `Webcam para reconhecimento` e o modelo classifica a imagem capturada.
+Este projeto pode ser usado para fins acadêmicos e de estudo.
