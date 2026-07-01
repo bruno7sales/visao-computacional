@@ -1,0 +1,16 @@
+﻿# Interface web
+streamlit>=1.36
+
+# Visao computacional e processamento numerico
+opencv-python>=4.9
+numpy>=1.24
+
+# Treinamento da CNN
+tensorflow>=2.15
+
+# Graficos de treino e avaliacao
+matplotlib>=3.8
+
+# Realtime webcam streaming for Streamlit
+streamlit-webrtc>=0.53.0
+av>=10.0
